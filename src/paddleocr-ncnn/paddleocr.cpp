@@ -111,6 +111,14 @@ void PaddleOCRApp::resetNet()
     needReset = false;
 }
 
+void PaddleOCRApp::clearInferenceAllocators()
+{
+    detBlobAllocator.clear();
+    detWorkspaceAllocator.clear();
+    recBlobAllocator.clear();
+    recWorkspaceAllocator.clear();
+}
+
 void PaddleOCRApp::initNet()
 {
     if(currentPath.empty()) {
@@ -162,6 +170,8 @@ void PaddleOCRApp::initNet()
 
         detNet = new ncnn::Net;
         detNet->opt = option;
+        detNet->opt.blob_allocator = &detBlobAllocator;
+        detNet->opt.workspace_allocator = &detWorkspaceAllocator;
         detNet->opt.num_threads = static_cast<int>(maxThreadsUsed);
         detNet->load_param_bin((detModel + paramSuffix).c_str());
         detNet->load_model((detModel + binSuffix).c_str());
@@ -173,6 +183,8 @@ void PaddleOCRApp::initNet()
 
         recNet = new ncnn::Net;
         recNet->opt = option;
+        recNet->opt.blob_allocator = &recBlobAllocator;
+        recNet->opt.workspace_allocator = &recWorkspaceAllocator;
 
         //由于检测网络的速度足够快，因此GPU设备仅给识别网络使用以节省GPU初始化时间
         if (!gpuCanUse.empty()) {
@@ -605,6 +617,7 @@ bool PaddleOCRApp::analyze()
         allResult.clear();
         boxesResult.clear();
         needBreak = false;
+        clearInferenceAllocators();
         return false;
     } else {
         //对识别结果进行最后清理，将未识别到文字的检测框排除掉
@@ -617,7 +630,9 @@ bool PaddleOCRApp::analyze()
             }
         }
 
-        return !textBoxes.empty();
+        const bool result = !textBoxes.empty();
+        clearInferenceAllocators();
+        return result;
     }
 }
 

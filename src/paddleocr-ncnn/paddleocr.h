@@ -30,6 +30,7 @@
 
 #include <utility>
 #include <atomic>
+#include <ncnn/allocator.h>
 
 namespace ncnn {
     class Net;
@@ -64,11 +65,16 @@ private:
     std::atomic_bool needBreak = false;
     ncnn::Net *detNet = nullptr;
     ncnn::Net *recNet = nullptr;
+    ncnn::PoolAllocator detBlobAllocator;
+    ncnn::PoolAllocator detWorkspaceAllocator;
+    ncnn::PoolAllocator recBlobAllocator;
+    ncnn::PoolAllocator recWorkspaceAllocator;
     std::vector<std::string> keys;
     PaddleOCR::PostProcessor postProcessor;
     PaddleOCR::Utility utilityTool;
     void resetNet(); //重置网络
     void initNet();  //初始化网络
+    void clearInferenceAllocators();
     std::vector<std::vector<std::vector<int>>> detect(const cv::Mat &src, float thresh, float boxThresh, float unclipRatio);   //检测
     std::pair<std::string, std::vector<int>> ctcDecode(const std::vector<float> &recNetOutputData, int h, int w); //CTC解码
     void rec(const std::vector<cv::Mat> &detectImg); //识别
