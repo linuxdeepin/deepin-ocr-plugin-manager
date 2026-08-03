@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020-2026 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 #include "toolkits.h"
 
 #include <string.h>
